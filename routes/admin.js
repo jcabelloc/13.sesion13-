@@ -15,7 +15,7 @@ router.get('/crear-producto',
             .isString()
             .isLength({ min: 3 })
             .trim(),
-        body('urlImagen').isURL(),
+        //body('urlImagen').isURL(),
         body('precio').isFloat(),
         body('descripcion')
             .isLength({ min: 10, max: 400 })
@@ -35,7 +35,7 @@ router.post('/editar-producto',
             .isString()
             .isLength({ min: 3 })
             .trim(),
-        body('urlImagen').isURL(),
+        //body('urlImagen').isURL(),
         body('precio').isFloat(),
         body('descripcion', 'La descripcion debe tener no menos de 10 ni mas de 400 caracteres')
             .isLength({ min: 10, max: 400 })
