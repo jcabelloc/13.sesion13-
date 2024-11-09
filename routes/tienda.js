@@ -22,6 +22,7 @@ router.get('/pedidos', isAuth, tiendaController.getPedidos);
 
 router.post('/crear-pedido', isAuth, tiendaController.postPedido);
 
+router.get('/pedidos/:idPedido', isAuth, tiendaController.getComprobante);
 
 
 module.exports = router;

@@ -12,8 +12,9 @@
                         <ul class="orders">
                             <% pedidos.forEach(pedido=> { %>
                                 <li class="orders__item">
-                                    <h1>Pedido - # <%= pedido._id %>
+                                    <h1>Pedido - # <%= pedido._id %> 
                                     </h1>
+                                    <a href="/pedidos/<%= pedido._id %>">Comprobante</a>
                                     <ul class="orders__products">
                                         <% pedido.productos.forEach(producto=> { %>
                                             <li class="orders__products-item">

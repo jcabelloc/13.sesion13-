@@ -1,6 +1,9 @@
 const Producto = require('../models/producto');
 const Pedido = require('../models/pedido');
 
+const fs = require('fs');
+const path = require('path');
+
 exports.getProductos = (req, res, next) => {
     Producto.find()
         .then(productos => {
@@ -152,4 +155,33 @@ exports.postPedido = (req, res, next) => {
             error.httpStatusCode = 500;
             return next(error);
         });
-}; 
+};
+
+
+exports.getComprobante = (req, res, next) => {
+    const idPedido = req.params.idPedido;
+    Pedido.findById(idPedido)
+      .then(pedido => {
+        if (!pedido) {
+          return next(new Error('No se encontro el pedido'));
+        }
+        if (pedido.usuario.idUsuario.toString() !== req.usuario._id.toString()) {
+          return next(new Error('No Autorizado'));
+        }
+        const nombreComprobante = 'comprobante-' + idPedido + '.pdf';
+        // const nombreComprobante = 'comprobante' + '.pdf';
+        const rutaComprobante = path.join('data', 'comprobantes', nombreComprobante);
+        fs.readFile(rutaComprobante, (err, data) => {
+          if (err) {
+            return next(new Error(err));
+          }
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader(
+            'Content-Disposition', // inline o attachment
+            'attachment; filename="' + nombreComprobante + '"'
+          );
+          res.send(data);
+        });
+      })
+      .catch(err => next(err));
+  };
