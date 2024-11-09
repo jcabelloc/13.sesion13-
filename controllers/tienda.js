@@ -171,6 +171,7 @@ exports.getComprobante = (req, res, next) => {
         const nombreComprobante = 'comprobante-' + idPedido + '.pdf';
         // const nombreComprobante = 'comprobante' + '.pdf';
         const rutaComprobante = path.join('data', 'comprobantes', nombreComprobante);
+        /*
         fs.readFile(rutaComprobante, (err, data) => {
           if (err) {
             return next(new Error(err));
@@ -181,7 +182,14 @@ exports.getComprobante = (req, res, next) => {
             'attachment; filename="' + nombreComprobante + '"'
           );
           res.send(data);
-        });
+        });*/
+        const file = fs.createReadStream(rutaComprobante);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+          'Content-Disposition',
+          'inline; filename="' + nombreComprobante + '"'
+        );
+        file.pipe(res);
       })
       .catch(err => next(err));
   };
