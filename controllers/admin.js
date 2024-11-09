@@ -17,9 +17,27 @@ exports.getCrearProducto = (req, res) => {
 
 exports.postCrearProducto = (req, res, next) => {
     const nombre = req.body.nombre;
-    const urlImagen = req.body.urlImagen;
+    //const urlImagen = req.body.urlImagen;
+    const imagen = req.file;
     const precio = req.body.precio;
     const descripcion = req.body.descripcion;
+
+    if (!imagen) {
+        return res.status(422).render('admin/editar-producto', {
+            path: '/admin/editar-producto',
+            titulo: 'Crear Producto',
+            modoEdicion: false,
+            tieneError: true,
+            mensajeError: 'No hay imagen de Producto',
+            erroresValidacion: [],
+            producto: {
+                nombre: nombre,
+                precio: precio,
+                descripcion: descripcion
+            },
+        });
+
+    }
 
     const errors = validationResult(req);
 
@@ -33,12 +51,13 @@ exports.postCrearProducto = (req, res, next) => {
             erroresValidacion: errors.array(),
             producto: {
                 nombre: nombre,
-                urlImagen: urlImagen,
                 precio: precio,
                 descripcion: descripcion
             },
         });
     }
+    const urlImagen = imagen.path;
+
     const producto = new Producto({
         // _id: new mongoose.Types.ObjectId('672c1d0333c24b7bc6512672'),
         nombre: nombre, 
@@ -88,7 +107,8 @@ exports.postEditarProducto = (req, res, next) => {
     const idProducto = req.body.idProducto;
     const nombre = req.body.nombre;
     const precio = req.body.precio;
-    const urlImagen = req.body.urlImagen;
+    // const urlImagen = req.body.urlImagen;
+    const imagen = req.file;
     const descripcion = req.body.descripcion;
 
     const errors = validationResult(req);
@@ -103,7 +123,6 @@ exports.postEditarProducto = (req, res, next) => {
             erroresValidacion: errors.array(),
             producto: {
                 nombre: nombre,
-                urlImagen: urlImagen,
                 precio: precio,
                 descripcion: descripcion,
                 _id: idProducto
@@ -119,7 +138,9 @@ exports.postEditarProducto = (req, res, next) => {
             producto.nombre = nombre;
             producto.precio = precio;
             producto.descripcion = descripcion;
-            producto.urlImagen = urlImagen;
+            if (imagen) {
+                producto.urlImagen = imagen.path;
+            }
             return producto.save();
         })
         .then(result => {
