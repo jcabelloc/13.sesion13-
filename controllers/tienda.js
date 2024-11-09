@@ -5,18 +5,37 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 
-const ITEMS_POR_PAGINA = 3;
+const ITEMS_POR_PAGINA = 2;
 
 exports.getProductos = (req, res, next) => {
+    let pagina = +req.query.pagina
+    if (!pagina) {
+        pagina = 1
+    }
+    // const pagina = +req.query.pagina || 1;
+    let nroProductos;
     Producto.find()
+        .countDocuments()
+        .then(nroDocs => {
+            nroProductos = nroDocs;
+            return Producto.find()
+                .skip((pagina - 1) * ITEMS_POR_PAGINA)
+                .limit(ITEMS_POR_PAGINA);
+
+        })
         .then(productos => {
             res.render('tienda/lista-productos', {
                 prods: productos,
                 titulo: "Productos de la tienda",
                 path: "/productos",
-                autenticado: req.session.autenticado
+                autenticado: req.session.autenticado,
+                paginaActual: pagina,
+                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
+                tienePaginaAnterior: pagina > 1,
+                paginaSiguiente: pagina + 1,
+                paginaAnterior: pagina - 1,
+                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
             });
-
         })
         .catch(err => {
             const error = new Error(err);
@@ -47,17 +66,33 @@ exports.getProducto = (req, res, next) => {
 }
 
 exports.getIndex = (req, res, next) => {
-    const pagina = req.query.pagina
-
+    let pagina = +req.query.pagina
+    if (!pagina) {
+        pagina = 1
+    }
+    // const pagina = +req.query.pagina || 1;
+    let nroProductos;
     Producto.find()
-        .skip((pagina - 1) * ITEMS_POR_PAGINA)
-        .limit(ITEMS_POR_PAGINA)
+        .countDocuments()
+        .then(nroDocs => {
+            nroProductos = nroDocs;
+            return Producto.find()
+                .skip((pagina - 1) * ITEMS_POR_PAGINA)
+                .limit(ITEMS_POR_PAGINA);
+
+        })
         .then(productos => {
             res.render('tienda/index', {
                 prods: productos,
                 titulo: "Pagina principal de la Tienda",
                 path: "/",
-                autenticado: req.session.autenticado
+                autenticado: req.session.autenticado,
+                paginaActual: pagina,
+                tienePaginaSiguiente: ITEMS_POR_PAGINA * pagina < nroProductos,
+                tienePaginaAnterior: pagina > 1,
+                paginaSiguiente: pagina + 1,
+                paginaAnterior: pagina - 1,
+                ultimaPagina: Math.ceil(nroProductos / ITEMS_POR_PAGINA)
             });
         })
         .catch(err => {
