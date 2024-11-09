@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 
+const ITEMS_POR_PAGINA = 3;
 
 exports.getProductos = (req, res, next) => {
     Producto.find()
@@ -46,7 +47,11 @@ exports.getProducto = (req, res, next) => {
 }
 
 exports.getIndex = (req, res, next) => {
+    const pagina = req.query.pagina
+
     Producto.find()
+        .skip((pagina - 1) * ITEMS_POR_PAGINA)
+        .limit(ITEMS_POR_PAGINA)
         .then(productos => {
             res.render('tienda/index', {
                 prods: productos,
