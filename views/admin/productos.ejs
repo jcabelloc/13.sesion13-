@@ -27,7 +27,7 @@
                                 <form action="/admin/eliminar-producto" method="POST">
                                     <input type="hidden" value="<%= producto._id %>" name="idProducto">
                                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                    <button class="btn" type="submit">Eliminar</button>
+                                    <button class="btn" type="button" onclick="deleteProducto(this)">Eliminar</button>
                                 </form>
     
                             </div>
@@ -40,3 +40,4 @@
         </main>
 
         <%- include('../includes/end.ejs') %>
+        <script src="/js/admin.js"></script>

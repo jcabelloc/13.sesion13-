@@ -193,4 +193,27 @@ exports.postEliminarProducto = (req, res, next) => {
             error.httpStatusCode = 500;
             return next(error);
         });
-}; 
+};
+
+
+
+
+exports.deleteProducto = (req, res, next) => {
+    const idProducto = req.params.idProducto;
+    Producto.findById(idProducto)
+      .then(producto => {
+        if (!producto) {
+          return next(new Error('Producto no encontrado'));
+        }
+        file.deleteFile(producto.urlImagen);
+        return Producto.deleteOne({ _id: idProducto, idUsuario: req.usuario._id });
+      })
+      .then(() => {
+        console.log('PRODUCTO ELIMINADO');
+        res.status(200).json({ message: 'Exitoso' });
+      })
+      .catch(err => {
+        res.status(500).json({ message: 'Eliminacion del producto fallo' });
+      });
+  };
+
