@@ -3,6 +3,8 @@ const Pedido = require('../models/pedido');
 
 const fs = require('fs');
 const path = require('path');
+const PDFDocument = require('pdfkit');
+
 
 exports.getProductos = (req, res, next) => {
     Producto.find()
@@ -161,35 +163,71 @@ exports.postPedido = (req, res, next) => {
 exports.getComprobante = (req, res, next) => {
     const idPedido = req.params.idPedido;
     Pedido.findById(idPedido)
-      .then(pedido => {
-        if (!pedido) {
-          return next(new Error('No se encontro el pedido'));
-        }
-        if (pedido.usuario.idUsuario.toString() !== req.usuario._id.toString()) {
-          return next(new Error('No Autorizado'));
-        }
-        const nombreComprobante = 'comprobante-' + idPedido + '.pdf';
-        // const nombreComprobante = 'comprobante' + '.pdf';
-        const rutaComprobante = path.join('data', 'comprobantes', nombreComprobante);
-        /*
-        fs.readFile(rutaComprobante, (err, data) => {
-          if (err) {
-            return next(new Error(err));
-          }
-          res.setHeader('Content-Type', 'application/pdf');
-          res.setHeader(
-            'Content-Disposition', // inline o attachment
-            'attachment; filename="' + nombreComprobante + '"'
-          );
-          res.send(data);
-        });*/
-        const file = fs.createReadStream(rutaComprobante);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader(
-          'Content-Disposition',
-          'inline; filename="' + nombreComprobante + '"'
-        );
-        file.pipe(res);
-      })
-      .catch(err => next(err));
-  };
+        .then(pedido => {
+            if (!pedido) {
+                return next(new Error('No se encontro el pedido'));
+            }
+            if (pedido.usuario.idUsuario.toString() !== req.usuario._id.toString()) {
+                return next(new Error('No Autorizado'));
+            }
+            const nombreComprobante = 'comprobante-' + idPedido + '.pdf';
+            // const nombreComprobante = 'comprobante' + '.pdf';
+            const rutaComprobante = path.join('data', 'comprobantes', nombreComprobante);
+
+
+            const pdfDoc = new PDFDocument();
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="' + nombreComprobante + '"'
+            );
+            pdfDoc.pipe(fs.createWriteStream(rutaComprobante));
+            pdfDoc.pipe(res);
+
+            pdfDoc.fontSize(26).text('Comprobante', {
+                underline: true
+            });
+            pdfDoc.fontSize(14).text('---------------------------------------');
+            let precioTotal = 0;
+            pedido.productos.forEach(prod => {
+                precioTotal += prod.cantidad * prod.producto.precio;
+                pdfDoc
+                    .fontSize(14)
+                    .text(
+                        prod.producto.nombre +
+                        ' - ' +
+                        prod.cantidad +
+                        ' x ' +
+                        'S/ ' +
+                        prod.producto.precio
+                    );
+            });
+            pdfDoc.text('---------------------------------------');
+            pdfDoc.fontSize(20).text('Precio Total: S/' + precioTotal);
+
+            pdfDoc.end();
+
+
+            /*
+            fs.readFile(rutaComprobante, (err, data) => {
+              if (err) {
+                return next(new Error(err));
+              }
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader(
+                'Content-Disposition', // inline o attachment
+                'attachment; filename="' + nombreComprobante + '"'
+              );
+              res.send(data);
+            }); */
+            /*
+            const file = fs.createReadStream(rutaComprobante);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader(
+              'Content-Disposition',
+              'inline; filename="' + nombreComprobante + '"'
+            );
+            file.pipe(res);*/
+        })
+        .catch(err => next(err));
+};
